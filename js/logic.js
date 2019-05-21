@@ -16,6 +16,7 @@
 // }
 
 Url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson'
+Url_tectonic = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json'
 
 // create radius function
 function getRadius(magnitude) {
@@ -39,9 +40,17 @@ function getColor(magnitude) {
    }
 }
 
-function createFeatures(earthquakeData) {
-  console.log(earthquakeData);
+function createFeatures(earthquakeData, tectonicData) {
+  console.log(earthquakeData[0]);
+  console.log(tectonicData[0]);
 
+    var tectonics = L.geoJSON(tectonicData)
+    // , {
+      // onEachFeature: function(feature, layer) {
+      //     layer.bindPopup("<h3>" + feature.properties.place +
+      //     "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" + "Magnitude: " + feature.properties.mag);
+      //   }
+    // })
     var earthquakes = L.geoJSON(earthquakeData, {
         onEachFeature: function(feature, layer) {
             layer.bindPopup("<h3>" + feature.properties.place +
@@ -60,7 +69,8 @@ function createFeatures(earthquakeData) {
         }
         });
 
-    myMap = createMap(earthquakes);
+    // console.log(`type of tectonics: ${typeof (tectonics)}, type of earthquates: ${typeof (earthquakes)}`);
+    myMap = createMap(earthquakes, tectonics);
 
     var legend = L.control({position: 'bottomright'});
 
@@ -77,7 +87,7 @@ function createFeatures(earthquakeData) {
                 magnitudes[i] + (magnitudes[i + 1] ? '&ndash;' + magnitudes[i + 1] + '<br>' : '+');
         }
 
-        console.log(div);
+        // console.log(div);
         return div;
     };
 
@@ -85,7 +95,7 @@ function createFeatures(earthquakeData) {
 }
 
 
-function createMap(earthquakes) {
+function createMap(earthquakes, tectonics) {
     // Define streetmap and darkmap layers
     const lightmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
             attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
@@ -117,14 +127,15 @@ function createMap(earthquakes) {
 
     // Create overlay object to hold our overlay layer
     const overlayMaps = {
-            Earthquakes: earthquakes
+            Earthquakes: earthquakes,
+            Tectonics: tectonics
     };
 
     // Create our map, giving it the streetmap and earthquakes layers to display on load
     const myMap = L.map("map", {
             center: [37.09, -95.71],
             zoom: 5,
-            layers: [lightmap, earthquakes]
+            layers: [lightmap, earthquakes, tectonics]
     });
 
 
@@ -141,7 +152,11 @@ function createMap(earthquakes) {
 (async function(){
     // const queryUrl = buildUrl();
     const data = await d3.json(Url);
+    const tectonic = await d3.json(Url_tectonic);
     // Once we get a response, send the data.features object to the createFeatures function
-    createFeatures(data.features);
+    createFeatures(data.features, tectonic.features);
+
+
+    console.log(tectonic);
 
 })()
