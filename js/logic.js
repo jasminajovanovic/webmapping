@@ -44,7 +44,9 @@ function createFeatures(earthquakeData, tectonicData) {
   console.log(earthquakeData[0]);
   console.log(tectonicData[0]);
 
-    var tectonics = L.geoJSON(tectonicData)
+    var tectonics = L.geoJSON(tectonicData, {
+      color: "orange",
+    })
     // , {
       // onEachFeature: function(feature, layer) {
       //     layer.bindPopup("<h3>" + feature.properties.place +
